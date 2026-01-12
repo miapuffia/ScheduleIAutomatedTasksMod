@@ -1,14 +1,13 @@
-﻿using HarmonyLib;
-using Il2CppScheduleOne.ObjectScripts;
+﻿#if IL2CPP
 using Il2CppScheduleOne.Packaging;
-using Il2CppScheduleOne.UI.Stations;
+using Il2CppScheduleOne.Product;
+#elif MONO
+using ScheduleOne.Packaging;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(PackagingStationMk2), "StartTask")]
@@ -21,7 +20,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomatePackagingStationMk2Coroutine(PackagingStationMk2 packagingStationMk2) {
+		private static IEnumerator AutomatePackagingStationMk2Coroutine(PackagingStationMk2 packagingStationMk2) {
 			PackagingTool packagingTool;
 			FunctionalPackaging functionalPackaging = null;
 			int maxProductsInPackaging;
@@ -49,8 +48,21 @@ namespace AutomatedTasksMod {
 			if(Utils.NullCheck(packagingTool, "Can't find packaging tool - probably exited task"))
 				yield break;
 
-			while(packagingTool.ProductInHopper > 0) {
+			Melon<Mod>.Logger.Msg(BackendUtils.GetPackagingToolProductInHopper(packagingTool));
+
+			while(BackendUtils.GetPackagingToolProductInHopper(packagingTool) > 0) {
 				Melon<Mod>.Logger.Msg("Dropping product");
+
+				GetIsPackagingStationMk2InUse(packagingStationMk2, out isInUse, ref isError);
+
+				if(isError || Utils.NullCheck(packagingTool) || !isInUse) {
+					Melon<Mod>.Logger.Msg("Can't find packaging station Mk2 - probably exited task");
+					yield break;
+				}
+
+				packagingTool.DropButton.StartClick(new RaycastHit());
+
+				yield return null;
 
 				GetIsPackagingStationMk2InUse(packagingStationMk2, out isInUse, ref isError);
 
@@ -59,7 +71,7 @@ namespace AutomatedTasksMod {
 					yield break;
 				}
 
-				packagingTool.DropProduct();
+				packagingTool.DropButton.EndClick();
 
 				Melon<Mod>.Logger.Msg("Waiting for packaging's contents to update");
 
@@ -80,7 +92,7 @@ namespace AutomatedTasksMod {
 					functionalPackaging = packagingTool.PackagingContainer.GetComponentsInChildren<FunctionalPackaging>().FirstOrDefault(fp => fp.GetComponentsInChildren<FunctionalProduct>().Length > maxProductsInPackaging);
 
 					if(!Utils.NullCheck(functionalPackaging)) {
-						Melon<Mod>.Logger.Msg("Packaging's contents incremented");
+						Melon<Mod>.Logger.Msg("Packaging's contents updated");
 						stepComplete = true;
 						break;
 					}
@@ -91,7 +103,7 @@ namespace AutomatedTasksMod {
 				}
 
 				if(!stepComplete) {
-					Melon<Mod>.Logger.Msg("Packaging's contents didn't increment after 3 seconds");
+					Melon<Mod>.Logger.Msg("Packaging's contents didn't update after 3 seconds");
 					yield break;
 				}
 
@@ -101,10 +113,12 @@ namespace AutomatedTasksMod {
 					functionalPackaging = null;
 					maxProductsInPackaging = 0;
 
-					numFinishedPackaging = packagingTool.FinalizedPackaging.Count;
+					numFinishedPackaging = BackendUtils.GetPackagingToolFinalizedPackaging(packagingTool).Count;
 
 					stepComplete = false;
 					time = 0;
+
+					packagingTool.RightButton.StartClick(new RaycastHit());
 
 					//Up to 3 seconds
 					while(time < 3) {
@@ -115,10 +129,9 @@ namespace AutomatedTasksMod {
 							yield break;
 						}
 
-						packagingTool.conveyorVelocity = 1f;
-
-						if(packagingTool.finalizeCoroutine != null) {
+						if(BackendUtils.GetPackagingToolFinalizeCoroutine(packagingTool) != null) {
 							Melon<Mod>.Logger.Msg("Full packaging kick animation started");
+							packagingTool.RightButton.EndClick();
 							stepComplete = true;
 							break;
 						}
@@ -147,7 +160,7 @@ namespace AutomatedTasksMod {
 							yield break;
 						}
 
-						if(packagingTool.finalizeCoroutine == null) {
+						if(BackendUtils.GetPackagingToolFinalizeCoroutine(packagingTool) == null) {
 							Melon<Mod>.Logger.Msg("Kick animation ended");
 							stepComplete = true;
 							break;
@@ -183,7 +196,7 @@ namespace AutomatedTasksMod {
 			}
 
 			isError = false;
-			isInUse = packagingStationMk2.visualsLocked;
+			isInUse = BackendUtils.GetPackagingStationVisualsLocked(packagingStationMk2);
 		}
 	}
 }

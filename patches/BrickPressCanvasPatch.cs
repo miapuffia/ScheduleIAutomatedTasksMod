@@ -1,14 +1,16 @@
-﻿using HarmonyLib;
+﻿#if IL2CPP
 using Il2CppScheduleOne.ObjectScripts;
-using Il2CppScheduleOne.Packaging;
 using Il2CppScheduleOne.UI.Stations;
+using Il2CppScheduleOne.Product;
+#elif MONO
+using ScheduleOne.ObjectScripts;
+using ScheduleOne.Packaging;
+using ScheduleOne.UI.Stations;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(BrickPressCanvas), "BeginButtonPressed")]
@@ -21,7 +23,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomateBrickPressCoroutine(BrickPressCanvas brickPressCanvas) {
+		private static IEnumerator AutomateBrickPressCoroutine(BrickPressCanvas brickPressCanvas) {
 			BrickPress brickPress;
 			Vector3 positionModifier;
 			bool stepComplete;
@@ -140,7 +142,7 @@ namespace AutomatedTasksMod {
 					return false;
 				}
 
-				brickPress.Handle.CurrentPosition = f;
+				brickPress.Handle.SetPosition(f);
 
 				return true;
 			});
@@ -153,7 +155,7 @@ namespace AutomatedTasksMod {
 			if(Utils.NullCheck([brickPress, brickPress?.Handle], "Can't find handle - probably exited task"))
 				yield break;
 
-			brickPress.Handle.CurrentPosition = 2;
+			brickPress.Handle.SetPosition(2);
 
 			Melon<Mod>.Logger.Msg("Done with brick press");
 		}

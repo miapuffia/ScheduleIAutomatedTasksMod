@@ -7,14 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomatedTasksMod", "Automa
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		IL2CPP|Any CPU = IL2CPP|Any CPU
+		Mono|Any CPU = Mono|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A08A0C37-BA3A-3B81-6885-83892D503184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A08A0C37-BA3A-3B81-6885-83892D503184}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A08A0C37-BA3A-3B81-6885-83892D503184}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A08A0C37-BA3A-3B81-6885-83892D503184}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A08A0C37-BA3A-3B81-6885-83892D503184}.IL2CPP|Any CPU.ActiveCfg = IL2CPP|Any CPU
+		{A08A0C37-BA3A-3B81-6885-83892D503184}.IL2CPP|Any CPU.Build.0 = IL2CPP|Any CPU
+		{A08A0C37-BA3A-3B81-6885-83892D503184}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
+		{A08A0C37-BA3A-3B81-6885-83892D503184}.Mono|Any CPU.Build.0 = Mono|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

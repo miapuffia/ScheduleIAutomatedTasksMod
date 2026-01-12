@@ -1,15 +1,14 @@
-﻿using HarmonyLib;
-using Il2CppScheduleOne.ObjectScripts;
+﻿#if IL2CPP
 using Il2CppScheduleOne.PlayerScripts;
-using Il2CppScheduleOne.Property.Utilities.Water;
-using Il2CppScheduleOne.UI.Stations;
+using Il2CppScheduleOne.Property;
+#elif MONO
+using ScheduleOne.Property.Utilities.Water;
+using ScheduleOne.PlayerScripts;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(Tap), "Interacted")]
@@ -22,7 +21,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomateSinkCoroutine(Tap tap) {
+		private static IEnumerator AutomateSinkCoroutine(Tap tap) {
 			bool isInUse;
 			bool isError = false;
 

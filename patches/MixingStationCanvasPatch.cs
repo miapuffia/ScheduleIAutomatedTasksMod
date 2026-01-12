@@ -1,21 +1,24 @@
-﻿using HarmonyLib;
+﻿#if IL2CPP
 using Il2CppScheduleOne.ObjectScripts;
 using Il2CppScheduleOne.PlayerScripts;
 using Il2CppScheduleOne.StationFramework;
 using Il2CppScheduleOne.UI.Stations;
+#elif MONO
+using ScheduleOne.ObjectScripts;
+using ScheduleOne.PlayerScripts;
+using ScheduleOne.StationFramework;
+using ScheduleOne.UI.Stations;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(MixingStationCanvas), "BeginButtonPressed")]
 	internal static class MixingStationCanvasPatch {
 		private static void Prefix(MixingStationCanvas __instance) {
-			if(!Utils.NullCheck(__instance.MixingStation) && __instance.MixingStation.TryCast<MixingStationMk2>() is null) {
+			if(!Utils.NullCheck(__instance.MixingStation) && __instance.MixingStation.BackendTryCast<MixingStationMk2>() is null) {
 				if(Prefs.mixingStationToggle.Value) {
 					MelonCoroutines.Start(AutomateMixingStationCoroutine(__instance));
 				} else {
@@ -24,7 +27,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomateMixingStationCoroutine(MixingStationCanvas mixingStationCanvas) {
+		private static IEnumerator AutomateMixingStationCoroutine(MixingStationCanvas mixingStationCanvas) {
 			MixingStation mixingStation;
 			Transform product;
 			IngredientPiece productPiece;

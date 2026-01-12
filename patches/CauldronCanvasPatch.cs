@@ -1,15 +1,18 @@
-﻿using HarmonyLib;
+﻿#if IL2CPP
 using Il2CppScheduleOne.ObjectScripts;
 using Il2CppScheduleOne.PlayerScripts;
 using Il2CppScheduleOne.StationFramework;
 using Il2CppScheduleOne.UI.Stations;
+#elif MONO
+using ScheduleOne.ObjectScripts;
+using ScheduleOne.PlayerScripts;
+using ScheduleOne.StationFramework;
+using ScheduleOne.UI.Stations;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(CauldronCanvas), "BeginButtonPressed")]
@@ -22,7 +25,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomateCauldronCoroutine(CauldronCanvas cauldronCanvas) {
+		private static IEnumerator AutomateCauldronCoroutine(CauldronCanvas cauldronCanvas) {
 			Cauldron cauldron;
 			PourableModule gasoline;
 			Vector3 moveToPosition;

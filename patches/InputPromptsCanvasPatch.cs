@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using Il2CppMTAssets.UltimateLODSystem.MeshSimplifier;
+﻿#if IL2CPP
 using Il2CppScheduleOne.Growing;
 using Il2CppScheduleOne.ItemFramework;
 using Il2CppScheduleOne.ObjectScripts;
@@ -7,15 +6,19 @@ using Il2CppScheduleOne.ObjectScripts.Soil;
 using Il2CppScheduleOne.PlayerScripts;
 using Il2CppScheduleOne.PlayerTasks;
 using Il2CppScheduleOne.UI;
-using Il2CppScheduleOne.UI.Stations;
-using Il2CppTMPro;
+#elif MONO
+using ScheduleOne.Growing;
+using ScheduleOne.ItemFramework;
+using ScheduleOne.ObjectScripts;
+using ScheduleOne.ObjectScripts.Soil;
+using ScheduleOne.PlayerScripts;
+using ScheduleOne.PlayerTasks;
+using ScheduleOne.UI;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(InputPromptsCanvas), "LoadModule", [typeof(string)])]
@@ -38,7 +41,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomatePouringSoilCoroutine() {
+		private static IEnumerator AutomatePouringSoilCoroutine() {
 			bool stepComplete;
 			bool isInUse;
 			bool isError = false;
@@ -115,7 +118,7 @@ namespace AutomatedTasksMod {
 			Melon<Mod>.Logger.Msg("Done pouring soil");
 		}
 
-		private static System.Collections.IEnumerator AutomateSowingSeedCoroutine() {
+		private static IEnumerator AutomateSowingSeedCoroutine() {
 			Pot pot;
 			Vector3 moveToPosition;
 			bool stepComplete;
@@ -174,7 +177,7 @@ namespace AutomatedTasksMod {
 			if(Utils.NullCheck([seed, seed?.Cap], "Can't find seed cap - probably exited task"))
 				yield break;
 
-			seed.Cap.Pop();
+			seed.Cap.StartClick(new RaycastHit());
 
 			Melon<Mod>.Logger.Msg("Waiting for seed to fall into position");
 
@@ -226,7 +229,7 @@ namespace AutomatedTasksMod {
 			Melon<Mod>.Logger.Msg("Done sowing seed");
 		}
 
-		private static System.Collections.IEnumerator AutomatePouringWaterCoroutine() {
+		private static IEnumerator AutomatePouringWaterCoroutine() {
 			Vector3 moveToPosition;
 			bool stepComplete;
 			bool stepComplete2;
@@ -241,7 +244,7 @@ namespace AutomatedTasksMod {
 
 			yield return new WaitForSeconds(_waitBeforeStartingPouringWaterTask);
 
-			FunctionalWateringCan wateringCan = GameObject.FindObjectOfType<FunctionalWateringCan>();
+            WaterContainerPourable wateringCan = GameObject.FindObjectOfType<WaterContainerPourable>();
 
 			if(Utils.NullCheck(wateringCan)) {
 				//Don't print error message because we might not even be trying to do this task
@@ -277,10 +280,10 @@ namespace AutomatedTasksMod {
 					yield break;
 				}
 
-				if(Utils.NullCheck([wateringCan.PourPoint, wateringCan.TargetPot.Target], "Can't find watering can components - probably exited task"))
+				if(Utils.NullCheck([wateringCan.PourPoint, wateringCan.TargetGrowContainer._pourTarget], "Can't find watering can components - probably exited task"))
 					yield break;
 
-				targetPosition = wateringCan.TargetPot.Target.position;
+				targetPosition = wateringCan.TargetGrowContainer._pourTarget.position;
 
 				moveToPosition = new Vector3(wateringCan.transform.position.x - (wateringCan.PourPoint.position.x - targetPosition.x), wateringCan.transform.position.y, wateringCan.transform.position.z - (wateringCan.PourPoint.position.z - targetPosition.z));
 
@@ -298,10 +301,10 @@ namespace AutomatedTasksMod {
 
 				//Up to 5 seconds
 				while(time < 5) {
-					if(Utils.NullCheck([wateringCan, wateringCan?.TargetPot, wateringCan?.TargetPot?.Target], "Can't find watering can pot target - probably exited task"))
+					if(Utils.NullCheck([wateringCan, wateringCan?.TargetGrowContainer, wateringCan?.TargetGrowContainer?._pourTarget], "Can't find watering can pot target - probably exited task"))
 						yield break;
 
-					if(wateringCan.TargetPot.Target.position != targetPosition) {
+					if(wateringCan.TargetGrowContainer._pourTarget.position != targetPosition) {
 						Melon<Mod>.Logger.Msg("Done watering target");
 						stepComplete2 = true;
 						break;
@@ -317,7 +320,7 @@ namespace AutomatedTasksMod {
 					yield break;
 				}
 
-				if(wateringCan.TargetPot.WaterLevel > wateringCan.TargetPot.WaterCapacity - wateringCan.TargetPot.WaterDrainPerHour) {
+				if(wateringCan.TargetGrowContainer._currentMoistureAmount > wateringCan.TargetGrowContainer.MoistureCapacity - wateringCan.TargetGrowContainer._moistureDrainPerHour) {
 					Melon<Mod>.Logger.Msg("Done watering");
 					stepComplete = true;
 					yield break;
@@ -330,7 +333,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomatePouringFertilizerCoroutine() {
+		private static IEnumerator AutomatePouringFertilizerCoroutine() {
 			Vector3 targetPosition;
 			Vector3 moveToPosition;
 			bool stepComplete;
@@ -368,8 +371,13 @@ namespace AutomatedTasksMod {
 
 			Melon<Mod>.Logger.Msg("Pouring fertilizer");
 
-			if(Utils.NullCheck([fertilizer, fertilizer?.TargetPot], "Can't find fertilizer - probably exited task"))
+			if(Utils.NullCheck([fertilizer, fertilizer?.TargetGrowContainer], "Can't find fertilizer - probably exited task"))
 				yield break;
+
+			if(fertilizer.TargetGrowContainer is not Pot pot) {
+                Melon<Mod>.Logger.Msg("Fertilizer grow container isn't a pot - not supported yet");
+                yield break;
+            }
 
 			float angle = 0;
 			int numSpiralRevolutions = 4;
@@ -377,7 +385,7 @@ namespace AutomatedTasksMod {
 			bool spiralingOut = true;
 			stepComplete = false;
 
-			for(float r = 0f; r >= 0; r = (-Math.Abs((angle / maxAngle) - 1) + 1) * fertilizer.TargetPot.PotRadius) {
+			for(float r = 0f; r >= 0; r = (-Math.Abs((angle / maxAngle) - 1) + 1) * pot.PotRadius) {
 				GetIsPotInUse(fertilizer, out isInUse, ref isError);
 
 				if(isError || !isInUse) {
@@ -385,7 +393,7 @@ namespace AutomatedTasksMod {
 					yield break;
 				}
 
-				targetPosition = new Vector3(fertilizer.TargetPot.PourableStartPoint.position.x + (Mathf.Sin(angle * Mathf.Deg2Rad) * r), 0, fertilizer.TargetPot.PourableStartPoint.position.z + (Mathf.Cos(angle * Mathf.Deg2Rad) * r));
+				targetPosition = new Vector3(pot.PourableStartPoint.position.x + (Mathf.Sin(angle * Mathf.Deg2Rad) * r), 0, pot.PourableStartPoint.position.z + (Mathf.Cos(angle * Mathf.Deg2Rad) * r));
 
 				moveToPosition = new Vector3(fertilizer.transform.position.x - (fertilizer.PourPoint.position.x - targetPosition.x), fertilizer.transform.position.y, fertilizer.transform.position.z - (fertilizer.PourPoint.position.z - targetPosition.z));
 
@@ -394,10 +402,10 @@ namespace AutomatedTasksMod {
 				yield return Utils.LerpPositionCoroutine(fertilizer.transform, moveToPosition, _timeToMoveFertilizer, () => isError = true);
 
 				if(isError) {
-					if(Utils.NullCheck([fertilizer, fertilizer?.TargetPot], "Can't find fertilizer pot - probably exited task"))
+					if(Utils.NullCheck([fertilizer, fertilizer?.TargetGrowContainer], "Can't find fertilizer pot - probably exited task"))
 						yield break;
 
-					if(fertilizer.TargetPot.AppliedAdditives.Count > 0) {
+					if(pot.AppliedAdditives.Count > 0) {
 						Melon<Mod>.Logger.Msg("Done pouring fertilizer");
 					} else {
 						Melon<Mod>.Logger.Msg("Can't find fertilizer to move - probably exited task");
@@ -406,10 +414,10 @@ namespace AutomatedTasksMod {
 					yield break;
 				}
 
-				if(Utils.NullCheck([fertilizer, fertilizer?.TargetPot], "Can't find fertilizer pot - probably exited task"))
+				if(Utils.NullCheck([fertilizer, pot], "Can't find fertilizer pot - probably exited task"))
 					yield break;
 
-				angle += 10 / (float) Math.Max(r / fertilizer.TargetPot.PotRadius, 0.1);
+				angle += 10 / (float) Math.Max(r / pot.PotRadius, 0.1);
 
 				if(spiralingOut && angle > maxAngle) {
 					Melon<Mod>.Logger.Msg("Pouring fertilizer did not complete after reaching the pot's radius - going back to center");
@@ -423,7 +431,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomateHarvestingCoroutine() {
+		private static IEnumerator AutomateHarvestingCoroutine() {
 			Pot pot;
 			bool isInUse;
 			bool isError = false;
@@ -465,7 +473,7 @@ namespace AutomatedTasksMod {
 		}
 
 		private static T GetPourableInUse<T>() where T : Pourable {
-			return GameObject.FindObjectsOfType<T>().FirstOrDefault(p => p.TargetPot?.PlayerUserObject.GetComponent<Player>()?.IsLocalPlayer ?? false);
+			return GameObject.FindObjectsOfType<T>().FirstOrDefault(p => p.TargetGrowContainer?.PlayerUserObject.GetComponent<Player>()?.IsLocalPlayer ?? false);
 		}
 
 		private static Pot GetPotInUse() {
@@ -479,10 +487,10 @@ namespace AutomatedTasksMod {
 				return;
 			}
 
-			GetIsPotInUse(pourable.TargetPot, out isInUse, ref isError);
+			GetIsPotInUse(pourable.TargetGrowContainer, out isInUse, ref isError);
 		}
 
-		private static void GetIsPotInUse(Pot pot, out bool isInUse, ref bool isError) {
+		private static void GetIsPotInUse(GrowContainer pot, out bool isInUse, ref bool isError) {
 			if(Utils.NullCheck([pot, pot?.PlayerUserObject])) {
 				isError = true;
 				isInUse = false;
@@ -508,12 +516,14 @@ namespace AutomatedTasksMod {
 				return false;
 			}
 
-			if(playerInventory.PriorEquippedSlotIndex >= player.Inventory.Count) {
+			int priorEquippedSlotIndex = BackendUtils.GetPlayerInventoryPriorEquippedSlotIndex(playerInventory);
+
+			if(priorEquippedSlotIndex >= player.Inventory.Length) {
 				Melon<Mod>.Logger.Msg("Invalid equipped item index - continuing");
 				return false;
 			}
 
-			ItemSlot itemSlot = player.Inventory[playerInventory.PriorEquippedSlotIndex];
+			ItemSlot itemSlot = player.Inventory[priorEquippedSlotIndex];
 
 			if(Utils.NullCheck(itemSlot)) {
 				Melon<Mod>.Logger.Msg("Can't find item slot to determine what trimmers are being used - continuing");

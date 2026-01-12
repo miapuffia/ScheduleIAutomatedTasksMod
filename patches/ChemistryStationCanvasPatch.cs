@@ -1,14 +1,16 @@
-﻿using HarmonyLib;
+﻿#if IL2CPP
 using Il2CppScheduleOne.ObjectScripts;
 using Il2CppScheduleOne.StationFramework;
 using Il2CppScheduleOne.UI.Stations;
+#elif MONO
+using ScheduleOne.ObjectScripts;
+using ScheduleOne.StationFramework;
+using ScheduleOne.UI.Stations;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(ChemistryStationCanvas), "BeginButtonPressed")]
@@ -21,7 +23,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomateChemistryStationCoroutine(ChemistryStationCanvas chemistryStationCanvas) {
+		private static IEnumerator AutomateChemistryStationCoroutine(ChemistryStationCanvas chemistryStationCanvas) {
 			ChemistryStation chemistryStation;
 			Beaker beaker;
 			StirringRod stirringRod;
@@ -207,7 +209,7 @@ namespace AutomatedTasksMod {
 				if(time > 0.1) {
 					Melon<Mod>.Logger.Msg("Simulating stir rod");
 
-					stirringRod.CurrentStirringSpeed = 4f;
+					BackendUtils.SetStirringRodCurrentStirringSpeed(stirringRod, 4f);
 					stirringRod.enabled = false;
 
 					isError = false;
@@ -252,7 +254,7 @@ namespace AutomatedTasksMod {
 					return false;
 				}
 
-				chemistryStation.LabStand.CurrentPosition = f;
+				chemistryStation.LabStand.SetPosition(f);
 
 				return true;
 			});
@@ -342,7 +344,7 @@ namespace AutomatedTasksMod {
 					return false;
 				}
 
-				chemistryStation.LabStand.CurrentPosition = f;
+				chemistryStation.LabStand.SetPosition(f);
 
 				return true;
 			});
@@ -382,9 +384,9 @@ namespace AutomatedTasksMod {
 				}
 
 				if(chemistryStation.BoilingFlask.CurrentTemperature + chemistryStation.BoilingFlask.CurrentTemperatureVelocity < 250) {
-					chemistryStation.Burner.IsDialHeld = true;
+					chemistryStation.Burner.ClickStart(new RaycastHit());
 				} else {
-					chemistryStation.Burner.IsDialHeld = false;
+					chemistryStation.Burner.ClickEnd();
 				}
 
 				time += Time.deltaTime;
@@ -404,8 +406,7 @@ namespace AutomatedTasksMod {
 				return;
 			}
 
-			chemistryStation.Burner.IsDialHeld = false;
-			chemistryStation.Burner.CurrentHeat = 0;
+			chemistryStation.Burner.ClickEnd();
 		}
 
 		private static void GetIsChemistryStationInUse(ChemistryStation chemistryStation, out bool isInUse, ref bool isError) {

@@ -1,18 +1,19 @@
-﻿using HarmonyLib;
+﻿#if IL2CPP
 using Il2CppScheduleOne.ItemFramework;
 using Il2CppScheduleOne.ObjectScripts;
-using Il2CppScheduleOne.PlayerScripts;
 using Il2CppScheduleOne.PlayerTasks;
-using Il2CppScheduleOne.Product;
 using Il2CppScheduleOne.UI.Stations;
+#elif MONO
+using ScheduleOne.ObjectScripts;
+using ScheduleOne.PlayerTasks;
+using ScheduleOne.UI.Stations;
+using ScheduleOne.ItemFramework;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(LabOvenCanvas), "BeginButtonPressed")]
@@ -37,7 +38,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomateLabOvenCoroutine(LabOvenCanvas labOvenCanvas) {
+		private static IEnumerator AutomateLabOvenCoroutine(LabOvenCanvas labOvenCanvas) {
 			LabOven labOven;
 			LabOvenHammer hammer;
 			Draggable hammerDraggable;
@@ -90,7 +91,7 @@ namespace AutomatedTasksMod {
 						return false;
 					}
 
-					labOven.Door.TargetPosition = f;
+					labOven.Door.SetPosition(f);
 
 					return true;
 				});
@@ -152,7 +153,7 @@ namespace AutomatedTasksMod {
 							return false;
 						}
 
-						labOven.Door.TargetPosition = f;
+						labOven.Door.SetPosition(f);
 
 						return true;
 					});
@@ -291,7 +292,7 @@ namespace AutomatedTasksMod {
 							return false;
 						}
 
-						labOven.Door.TargetPosition = f;
+						labOven.Door.SetPosition(f);
 
 						return true;
 					});
@@ -441,20 +442,22 @@ namespace AutomatedTasksMod {
 
 				int quantity = labOven.CurrentOperation.IngredientQuantity * labOven.CurrentOperation.Cookable.ProductQuantity;
 
-				QualityItemInstance product = labOven.CurrentOperation.Cookable.Product.GetDefaultInstance(quantity).Cast<QualityItemInstance>();
+				QualityItemInstance product = labOven.CurrentOperation.Cookable.Product.GetDefaultInstance(quantity).BackendCast<QualityItemInstance>();
 				product.Quality = labOven.CurrentOperation.IngredientQuality;
 
 				labOven.CookedLiquidMesh.transform.parent.gameObject.SetActive(false);
 				labOven.Shatter(quantity, labOven.CurrentOperation.Cookable.ProductShardPrefab.gameObject);
 
-				for(int i = 0; i < labOven.shards.Count; i++) {
-					if(i >= labOven.ShardSpawnPoints.Count) {
+				var shards = BackendUtils.GetLabOvenShards(labOven);
+
+				for(int i = 0; i < shards.Count; i++) {
+					if(i >= labOven.ShardSpawnPoints.Length) {
 						Melon<Mod>.Logger.Msg("Too many shards - continuing since this is visual");
 						break;
 					}
 
-					GameObject.Destroy(labOven.shards[i].GetComponent<Rigidbody>());
-					labOven.shards[i].transform.position = labOven.ShardSpawnPoints[i].position;
+					GameObject.Destroy(shards[i].GetComponent<Rigidbody>());
+					shards[i].transform.position = labOven.ShardSpawnPoints[i].position;
 				}
 
 				labOven.OutputSlot.InsertItem(product);

@@ -1,14 +1,9 @@
-﻿using Il2CppGameKit.Utilities;
-using Il2CppScheduleOne.ObjectScripts;
-using Il2CppScheduleOne.Packaging;
-using Il2CppScheduleOne.PlayerScripts;
-using Il2CppScheduleOne.UI.Stations;
+﻿#if IL2CPP
+using Il2CppGameKit.Utilities;
+#elif MONO
+using GameKit.Utilities;
+#endif
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -247,6 +242,7 @@ namespace AutomatedTasksMod {
 		internal static bool NullCheck(object obj, string message = null) {
 			bool isNull;
 
+#if IL2CPP
 			if(obj is GameObject) {
 				isNull = (obj as GameObject) == null || (obj as GameObject).IsDestroyed() || (obj as GameObject).WasCollected;
 			} else if(obj is Component) {
@@ -254,6 +250,15 @@ namespace AutomatedTasksMod {
 			} else {
 				isNull = obj == null;
 			}
+#elif MONO
+			if(obj is GameObject) {
+				isNull = (obj as GameObject) == null || (obj as GameObject).IsDestroyed();
+			} else if(obj is Component) {
+				isNull = (obj as Component) == null || (obj as Component).gameObject == null || (obj as Component).gameObject.IsDestroyed();
+			} else {
+				isNull = obj == null;
+			}
+#endif
 
 			if(isNull && message != null) {
 				Melon<Mod>.Logger.Msg(message);

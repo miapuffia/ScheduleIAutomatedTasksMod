@@ -1,20 +1,23 @@
-﻿using HarmonyLib;
+﻿#if IL2CPP
 using Il2CppScheduleOne.ObjectScripts;
 using Il2CppScheduleOne.Packaging;
 using Il2CppScheduleOne.UI.Stations;
+using Il2CppScheduleOne.Product;
+#elif MONO
+using ScheduleOne.ObjectScripts;
+using ScheduleOne.Packaging;
+using ScheduleOne.UI.Stations;
+#endif
+using HarmonyLib;
 using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections;
 
 namespace AutomatedTasksMod {
 	[HarmonyPatch(typeof(PackagingStationCanvas), "BeginButtonPressed")]
 	internal static class PackagingStationCanvasPatch {
 		private static void Prefix(PackagingStationCanvas __instance) {
-			if(!Utils.NullCheck(__instance.PackagingStation) && __instance.PackagingStation.TryCast<PackagingStationMk2>() is null) {
+			if(!Utils.NullCheck(__instance.PackagingStation) && __instance.PackagingStation.BackendTryCast<PackagingStationMk2>() is null) {
 				if(Prefs.mixingStationToggle.Value) {
 					MelonCoroutines.Start(AutomatePackagingStationCoroutine(__instance));
 				} else {
@@ -23,7 +26,7 @@ namespace AutomatedTasksMod {
 			}
 		}
 
-		private static System.Collections.IEnumerator AutomatePackagingStationCoroutine(PackagingStationCanvas packagingStationCanvas) {
+		private static IEnumerator AutomatePackagingStationCoroutine(PackagingStationCanvas packagingStationCanvas) {
 			PackagingStation packagingStation;
 			FunctionalPackaging packaging;
 			Vector3 moveToPosition;
@@ -85,7 +88,7 @@ namespace AutomatedTasksMod {
 					moveToPosition = packaging.gameObject.transform.position;
 					moveToPosition.y += 0.3f;
 
-					productsInPackaging = packaging.PackedProducts.Count;
+					productsInPackaging = BackendUtils.GetFunctionalPackagingPackedProducts(packaging).Count;
 
 					isError = false;
 
@@ -110,7 +113,7 @@ namespace AutomatedTasksMod {
 							yield break;
 						}
 
-						if(packaging.PackedProducts.Count > productsInPackaging) {
+						if(BackendUtils.GetFunctionalPackagingPackedProducts(packaging).Count > productsInPackaging) {
 							if(packaging.IsFull) {
 								Melon<Mod>.Logger.Msg("Packaging is full - closing packaging");
 								packaging.Seal();
@@ -165,7 +168,7 @@ namespace AutomatedTasksMod {
 						}
 
 						if(!isInUse) {
-							if(packagingStationCanvas.BeginButton.currentSelectionState == UnityEngine.UI.Selectable.SelectionState.Normal) {
+							if(packagingStationCanvas.BeginButton.IsInteractable()) {
 								Melon<Mod>.Logger.Msg("Probably exited task");
 							} else {
 								Melon<Mod>.Logger.Msg("Done packaging");
