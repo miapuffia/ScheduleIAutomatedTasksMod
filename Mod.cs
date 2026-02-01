@@ -1,6 +1,6 @@
 ﻿using MelonLoader;
 
-[assembly: MelonInfo(typeof(AutomatedTasksMod.Mod), "AutomatedTasksMod", "1.2.0", "Robert Rioja")]
+[assembly: MelonInfo(typeof(AutomatedTasksMod.Mod), "AutomatedTasksMod", "1.2.1", "Robert Rioja")]
 [assembly: MelonColor(1, 255, 20, 147)]
 [assembly: MelonGame("TVGS", "Schedule I")]
 

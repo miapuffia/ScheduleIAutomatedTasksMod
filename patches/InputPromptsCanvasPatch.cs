@@ -120,7 +120,6 @@ namespace AutomatedTasksMod {
 
 		private static IEnumerator AutomateSowingSeedCoroutine() {
 			Pot pot;
-			Vector3 moveToPosition;
 			bool stepComplete;
 			bool isInUse;
 			bool isError = false;
@@ -156,14 +155,11 @@ namespace AutomatedTasksMod {
 			if(Utils.NullCheck(seed.Vial, "Can't find seed vial - probably exited task"))
 				yield break;
 
-			moveToPosition = seed.Vial.transform.position;
-			moveToPosition.y -= 0.1f;
-
 			seed.Vial.transform.localEulerAngles = Vector3.zero;
 
 			isError = false;
 
-			yield return Utils.SinusoidalLerpPositionAndRotationCoroutine(seed.Vial.transform, moveToPosition, new Vector3(seed.Vial.transform.localEulerAngles.x + 180, seed.Vial.transform.localEulerAngles.y, seed.Vial.transform.localEulerAngles.z), _timeToMoveAndRotateSeedVial, () => isError = true);
+			yield return Utils.SinusoidalLerpRotationCoroutine(seed.Vial.transform, new Vector3(seed.Vial.transform.localEulerAngles.x + 180, seed.Vial.transform.localEulerAngles.y, seed.Vial.transform.localEulerAngles.z), _timeToMoveAndRotateSeedVial, () => isError = true);
 
 			if(isError) {
 				Melon<Mod>.Logger.Msg("Can't find seed vial to move and rotate - probably exited task");

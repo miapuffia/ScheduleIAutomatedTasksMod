@@ -115,7 +115,7 @@ namespace AutomatedTasksMod {
 				moveBackToPosition = pourable.transform.position;
 
 				moveToPosition = beaker.transform.position;
-				moveToPosition.y += 0.4f;
+				moveToPosition.y += 0.5f;
 
 				isError = false;
 
