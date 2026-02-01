@@ -244,7 +244,7 @@ namespace AutomatedTasksMod {
 
 			yield return new WaitForSeconds(_waitBeforeStartingPouringWaterTask);
 
-            WaterContainerPourable wateringCan = GameObject.FindObjectOfType<WaterContainerPourable>();
+			WaterContainerPourable wateringCan = GameObject.FindObjectOfType<WaterContainerPourable>();
 
 			if(Utils.NullCheck(wateringCan)) {
 				//Don't print error message because we might not even be trying to do this task
@@ -283,11 +283,11 @@ namespace AutomatedTasksMod {
 
 				if(Utils.NullCheck([wateringCan, wateringCan?.PourPoint, wateringCan?.TargetGrowContainer], "Can't find watering can components - probably exited task"))
 					yield break;
-				
-				if(Utils.TypeCheck(wateringCan.TargetGrowContainer, out targetPot, "Watering can grow container isn't a pot - not supported yet"))
-                    yield break;
 
-                targetPosition = targetPot.GetCurrentTargetPosition();
+				if(Utils.TypeCheck(wateringCan.TargetGrowContainer, out targetPot, "Watering can grow container isn't a pot - not supported yet"))
+					yield break;
+
+				targetPosition = targetPot.GetCurrentTargetPosition();
 
 				moveToPosition = new Vector3(wateringCan.transform.position.x - (wateringCan.PourPoint.position.x - targetPosition.x), wateringCan.transform.position.y, wateringCan.transform.position.z - (wateringCan.PourPoint.position.z - targetPosition.z));
 
@@ -381,18 +381,13 @@ namespace AutomatedTasksMod {
 			if(Utils.NullCheck([fertilizer, fertilizer?.TargetGrowContainer], "Can't find fertilizer - probably exited task"))
 				yield break;
 
-			if(fertilizer.TargetGrowContainer is not Pot pot) {
-                Melon<Mod>.Logger.Msg("Fertilizer grow container isn't a pot - not supported yet");
-                yield break;
-            }
-
 			float angle = 0;
 			int numSpiralRevolutions = 4;
 			float maxAngle = 360 * numSpiralRevolutions;
 			bool spiralingOut = true;
 			stepComplete = false;
 
-			for(float r = 0f; r >= 0; r = (-Math.Abs((angle / maxAngle) - 1) + 1) * pot.PotRadius) {
+			for(float r = 0f; r >= 0; r = (-Math.Abs((angle / maxAngle) - 1) + 1) * (fertilizer.TargetGrowContainer.GetGrowSurfaceSideLength() / 2)) {
 				GetIsPotInUse(fertilizer, out isInUse, ref isError);
 
 				if(isError || !isInUse) {
@@ -400,19 +395,22 @@ namespace AutomatedTasksMod {
 					yield break;
 				}
 
-				targetPosition = new Vector3(pot.PourableStartPoint.position.x + (Mathf.Sin(angle * Mathf.Deg2Rad) * r), 0, pot.PourableStartPoint.position.z + (Mathf.Cos(angle * Mathf.Deg2Rad) * r));
+				if(Utils.NullCheck([fertilizer, fertilizer?.TargetGrowContainer], "Can't find fertilizer - probably exited task"))
+					yield break;
+
+				targetPosition = new Vector3(fertilizer.TargetGrowContainer.PourableStartPoint.position.x + (Mathf.Sin(angle * Mathf.Deg2Rad) * r), 0, fertilizer.TargetGrowContainer.PourableStartPoint.position.z + (Mathf.Cos(angle * Mathf.Deg2Rad) * r));
 
 				moveToPosition = new Vector3(fertilizer.transform.position.x - (fertilizer.PourPoint.position.x - targetPosition.x), fertilizer.transform.position.y, fertilizer.transform.position.z - (fertilizer.PourPoint.position.z - targetPosition.z));
 
 				isError = false;
 
-				yield return Utils.LerpPositionCoroutine(fertilizer.transform, moveToPosition, _timeToMoveFertilizer, () => isError = true);
+				yield return Utils.LerpPositionCoroutine(fertilizer.transform, moveToPosition, _timeToMoveFertilizer, () => isError = true, false);
 
 				if(isError) {
 					if(Utils.NullCheck([fertilizer, fertilizer?.TargetGrowContainer], "Can't find fertilizer pot - probably exited task"))
 						yield break;
 
-					if(pot.AppliedAdditives.Count > 0) {
+					if(fertilizer.TargetGrowContainer.AppliedAdditives.Count > 0) {
 						Melon<Mod>.Logger.Msg("Done pouring fertilizer");
 					} else {
 						Melon<Mod>.Logger.Msg("Can't find fertilizer to move - probably exited task");
@@ -421,10 +419,10 @@ namespace AutomatedTasksMod {
 					yield break;
 				}
 
-				if(Utils.NullCheck([fertilizer, pot], "Can't find fertilizer pot - probably exited task"))
+				if(Utils.NullCheck([fertilizer, fertilizer?.TargetGrowContainer], "Can't find fertilizer pot - probably exited task"))
 					yield break;
 
-				angle += 10 / (float) Math.Max(r / pot.PotRadius, 0.1);
+				angle += 10 / (float) Math.Max(r / (fertilizer.TargetGrowContainer.GetGrowSurfaceSideLength() / 2), 0.1);
 
 				if(spiralingOut && angle > maxAngle) {
 					Melon<Mod>.Logger.Msg("Pouring fertilizer did not complete after reaching the pot's radius - going back to center");

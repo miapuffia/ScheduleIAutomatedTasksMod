@@ -13,7 +13,9 @@ using UnityEngine.InputSystem.LowLevel;
 
 namespace AutomatedTasksMod {
 	internal class Utils {
-		internal static System.Collections.IEnumerator LerpPositionCoroutine(Transform transform, Vector3 targetPosition, float duration, Action onError = null) {
+		private const int FramesToSetValues = 5;
+
+		internal static System.Collections.IEnumerator LerpPositionCoroutine(Transform transform, Vector3 targetPosition, float duration, Action onError = null, bool correctForLag = true) {
 			float time = 0;
 			Vector3 startPosition = transform.position;
 
@@ -36,15 +38,22 @@ namespace AutomatedTasksMod {
 				yield return null;
 			}
 
-			if(transform == null) {
-				onError?.Invoke();
-				yield break;
-			}
+			//Attempt to counteract lag by forcing the correct position for multiple frames
+			if(correctForLag) {
+				for(int i = 0; i < FramesToSetValues; i++) {
+					if(transform == null) {
+						onError?.Invoke();
+						yield break;
+					}
 
-			transform.position = targetPosition;
+					transform.position = targetPosition;
+
+					yield return null;
+				}
+			}
 		}
 
-		internal static System.Collections.IEnumerator SinusoidalLerpPositionCoroutine(Transform transform, Vector3 targetPosition, float duration, Action onError = null) {
+		internal static System.Collections.IEnumerator SinusoidalLerpPositionCoroutine(Transform transform, Vector3 targetPosition, float duration, Action onError = null, bool correctForLag = true) {
 			float time = 0;
 			Vector3 startPosition = transform.position;
 
@@ -69,15 +78,22 @@ namespace AutomatedTasksMod {
 				yield return null;
 			}
 
-			if(transform == null) {
-				onError?.Invoke();
-				yield break;
-			}
+			//Attempt to counteract lag by forcing the correct position for multiple frames
+			if(correctForLag) {
+				for(int i = 0; i < FramesToSetValues; i++) {
+					if(transform == null) {
+						onError?.Invoke();
+						yield break;
+					}
 
-			transform.position = targetPosition;
+					transform.position = targetPosition;
+
+					yield return null;
+				}
+			}
 		}
 
-		internal static System.Collections.IEnumerator SinusoidalLerpPositionsCoroutine(Transform[] transforms, Vector3 positionModifier, float duration, Action onError = null) {
+		internal static System.Collections.IEnumerator SinusoidalLerpPositionsCoroutine(Transform[] transforms, Vector3 positionModifier, float duration, Action onError = null, bool correctForLag = true) {
 			float time = 0;
 
 			Vector3[] startPositions = [.. transforms.Select(t => t.position)];
@@ -108,17 +124,24 @@ namespace AutomatedTasksMod {
 				yield return null;
 			}
 
-			for(int i = 0; i < transforms.Length; i++) {
-				if(transforms[i] == null) {
-					onError?.Invoke();
-					yield break;
-				}
+			//Attempt to counteract lag by forcing the correct position for multiple frames
+			if(correctForLag) {
+				for(int i = 0; i < FramesToSetValues; i++) {
+					for(int j = 0; j < transforms.Length; j++) {
+						if(transforms[j] == null) {
+							onError?.Invoke();
+							yield break;
+						}
 
-				transforms[i].position = new Vector3(startPositions[i].x + positionModifier.x, startPositions[i].y + positionModifier.y, startPositions[i].z + positionModifier.z);
+						transforms[j].position = new Vector3(startPositions[j].x + positionModifier.x, startPositions[j].y + positionModifier.y, startPositions[j].z + positionModifier.z);
+					}
+
+					yield return null;
+				}
 			}
 		}
 
-		internal static System.Collections.IEnumerator LerpRotationCoroutine(Transform transform, Vector3 targetAngle, float duration, Action onError = null) {
+		internal static System.Collections.IEnumerator LerpRotationCoroutine(Transform transform, Vector3 targetAngle, float duration, Action onError = null, bool correctForLag = true) {
 			float time = 0;
 			Vector3 startRotation = transform.localEulerAngles;
 
@@ -141,15 +164,22 @@ namespace AutomatedTasksMod {
 				yield return null;
 			}
 
-			if(transform == null) {
-				onError?.Invoke();
-				yield break;
-			}
+			//Attempt to counteract lag by forcing the correct position for multiple frames
+			if(correctForLag) {
+				for(int i = 0; i < FramesToSetValues; i++) {
+					if(transform == null) {
+						onError?.Invoke();
+						yield break;
+					}
 
-			transform.localEulerAngles = targetAngle;
+					transform.localEulerAngles = targetAngle;
+
+					yield return null;
+				}
+			}
 		}
 
-		internal static System.Collections.IEnumerator SinusoidalLerpRotationCoroutine(Transform transform, Vector3 targetAngle, float duration, Action onError = null) {
+		internal static System.Collections.IEnumerator SinusoidalLerpRotationCoroutine(Transform transform, Vector3 targetAngle, float duration, Action onError = null, bool correctForLag = true) {
 			float time = 0;
 			Vector3 startRotation = transform.localEulerAngles;
 
@@ -173,15 +203,22 @@ namespace AutomatedTasksMod {
 				yield return null;
 			}
 
-			if(transform == null) {
-				onError?.Invoke();
-				yield break;
-			}
+			//Attempt to counteract lag by forcing the correct position for multiple frames
+			if(correctForLag) {
+				for(int i = 0; i < FramesToSetValues; i++) {
+					if(transform == null) {
+						onError?.Invoke();
+						yield break;
+					}
 
-			transform.localEulerAngles = targetAngle;
+					transform.localEulerAngles = targetAngle;
+
+					yield return null;
+				}
+			}
 		}
 
-		internal static System.Collections.IEnumerator SinusoidalLerpPositionAndRotationCoroutine(Transform transform, Vector3 targetPosition, Vector3 targetAngle, float duration, Action onError = null) {
+		internal static System.Collections.IEnumerator SinusoidalLerpPositionAndRotationCoroutine(Transform transform, Vector3 targetPosition, Vector3 targetAngle, float duration, Action onError = null, bool correctForLag = true) {
 			float time = 0;
 			Vector3 startPosition = transform.position;
 			Vector3 startRotation = transform.localEulerAngles;
@@ -215,13 +252,20 @@ namespace AutomatedTasksMod {
 				yield return null;
 			}
 
-			if(transform == null) {
-				onError?.Invoke();
-				yield break;
-			}
+			//Attempt to counteract lag by forcing the correct position for multiple frames
+			if(correctForLag) {
+				for(int i = 0; i < FramesToSetValues; i++) {
+					if(transform == null) {
+						onError?.Invoke();
+						yield break;
+					}
 
-			transform.position = targetPosition;
-			transform.localEulerAngles = targetAngle;
+					transform.position = targetPosition;
+					transform.localEulerAngles = targetAngle;
+
+					yield return null;
+				}
+			}
 		}
 
 		internal static System.Collections.IEnumerator LerpFloatCallbackCoroutine(float start, float end, float duration, Func<float, bool> body) {
@@ -280,7 +324,7 @@ namespace AutomatedTasksMod {
 			}
 
 			return false;
-        }
+		}
 
 #if IL2CPP
 		internal static bool TypeCheck<T>(Il2CppObjectBase obj, out T value, string message = null) where T : Il2CppObjectBase {
@@ -290,13 +334,13 @@ namespace AutomatedTasksMod {
 			T castedValue = obj as T;
 #endif
 
-            if(castedValue == null) {
-                if(message != null)
-                    Melon<Mod>.Logger.Msg(message + " (" + obj.GetType().Name + ")");
+			if(castedValue == null) {
+				if(message != null)
+					Melon<Mod>.Logger.Msg(message + " (" + obj.GetType().Name + ")");
 
 				value = default;
 				return true;
-            } else {
+			} else {
 				value = castedValue;
 				return false;
 			}

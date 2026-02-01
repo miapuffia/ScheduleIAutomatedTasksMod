@@ -276,7 +276,7 @@ namespace AutomatedTasksMod {
 					}
 
 					yield return new WaitForSeconds(_waitBeforeClosingLabOvenDoorCocaine);
-					
+
 					Melon<Mod>.Logger.Msg("Closing lab oven door");
 
 					if(Utils.NullCheck([labOven, labOven?.Door], "Can't find lab oven door - probably exited task"))

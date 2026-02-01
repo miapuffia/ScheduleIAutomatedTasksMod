@@ -193,12 +193,6 @@
 		<Reference Include="Il2CppVisualDesignCafe.ShaderX">
 			<HintPath>K:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\Il2CppAssemblies\Il2CppVisualDesignCafe.ShaderX.dll</HintPath>
 		</Reference>
-		<Reference Include="MethodAddressToToken">
-			<HintPath>K:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\Il2CppAssemblies\MethodAddressToToken.db</HintPath>
-		</Reference>
-		<Reference Include="MethodXrefScanCache">
-			<HintPath>K:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\Il2CppAssemblies\MethodXrefScanCache.db</HintPath>
-		</Reference>
 		<Reference Include="Unity.AI.Navigation">
 			<HintPath>K:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\Il2CppAssemblies\Unity.AI.Navigation.dll</HintPath>
 		</Reference>
@@ -989,8 +983,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="LavaGang.MelonLoader" Version="0.7.0" />
-		<PackageReference Include="Lib.Harmony" Version="2.3.5" />
+		<PackageReference Include="LavaGang.MelonLoader" Version="0.7.1" />
+		<PackageReference Include="Lib.Harmony" Version="2.4.2" />
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
