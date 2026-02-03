@@ -140,8 +140,8 @@ namespace AutomatedTasksMod {
 				stepComplete = false;
 				time = 0;
 
-				//Up to 3 seconds
-				while(time < 3) {
+				//Up to 2 seconds
+				while(time < 2) {
 					if(Utils.NullCheck(pourable, "Can't find pourable - probably exited task"))
 						yield break;
 
@@ -152,15 +152,23 @@ namespace AutomatedTasksMod {
 					}
 
 					pourable.transform.position = moveToPosition;
-
+					
 					time += Time.deltaTime;
 
 					yield return null;
 				}
 
 				if(!stepComplete) {
-					Melon<Mod>.Logger.Msg("Pouring didn't complete after 3 seconds");
-					yield break;
+					Melon<Mod>.Logger.Msg("Pouring didn't complete after 3 seconds - attempting backup method");
+
+					if(Utils.NullCheck(pourable, "Can't find pourable - probably exited task"))
+						yield break;
+
+					if(Utils.NullCheck([beaker, beaker?.Fillable], "Can't find beaker - probably exited task"))
+						yield break;
+
+					beaker.Fillable.AddLiquid(pourable.LiquidType, pourable.LiquidCapacity_L, pourable.LiquidColor);
+					pourable.SetLiquidLevel(0);
 				}
 
 				Melon<Mod>.Logger.Msg("Moving pourable out of the way");
