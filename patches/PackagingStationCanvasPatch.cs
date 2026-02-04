@@ -19,7 +19,7 @@ namespace AutomatedTasksMod {
 	internal static class PackagingStationCanvasPatch {
 		private static void Prefix(PackagingStationCanvas __instance) {
 			if(!Utils.NullCheck(__instance.PackagingStation) && __instance.PackagingStation.BackendTryCast<PackagingStationMk2>() is null) {
-				if(Prefs.mixingStationToggle.Value) {
+				if(Prefs.packagingStationToggle.Value) {
 					MelonCoroutines.Start(AutomatePackagingStationCoroutine(__instance));
 				} else {
 					Melon<Mod>.Logger.Msg("Automate mixing station disabled in settings");
